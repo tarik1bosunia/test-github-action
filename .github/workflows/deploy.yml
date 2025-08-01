@@ -3,13 +3,16 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - main  # Change if you use a different branch
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4  # 👈 This is mandatory
+
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -19,5 +22,5 @@ jobs:
 
       - name: Copy Code to VPS
         run: |
-          rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519" ./ \
+          rsync -avz --progress --delete -e "ssh -i ~/.ssh/id_ed25519" . \
           ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/deploy/tata/test-github-action
