@@ -3,31 +3,21 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - main   # Change if your default branch is different
+      - main  # Change if you use a different branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Install SSH
-        run: sudo apt-get install -y ssh
-
-      - name: Setup SSH Key
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy Code to VPS
+      - name: Copy Code to VPS
         run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
-            cd /path/to/your/app || exit 1
-            git pull origin main
-            # Optional: Restart services if needed
-            # sudo systemctl restart your-app.service
-          "
+          rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519" ./ \
+          ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/deploy/tata/test-github-action
